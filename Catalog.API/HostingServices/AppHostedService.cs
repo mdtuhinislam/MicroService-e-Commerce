@@ -1,10 +1,13 @@
 ﻿
+using Catalog.API.Context;
+
 namespace Catalog.API.HostingServices
 {
     public class AppHostedService : IHostedService
     {
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            CatalogDbContextSeed.Seed();
             return Task.CompletedTask;
         }
 
