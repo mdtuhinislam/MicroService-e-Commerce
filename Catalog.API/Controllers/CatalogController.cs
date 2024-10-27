@@ -33,8 +33,6 @@ namespace Catalog.API.Controllers
 
                 return CustomResult(ex.Message, HttpStatusCode.BadRequest);
             }
-            
-
         }
         [HttpPost("createOrUpdate")]
         public IActionResult CreateOrUpdate(Product product)
@@ -57,7 +55,7 @@ namespace Catalog.API.Controllers
                         {
                             item.Name = product.Name;
                             item.Description = product.Description;
-                            item.Category = product.Category;
+                            item.ProductCategoryId = product.ProductCategoryId;
                             item.Summary = product.Summary;
                             item.ImageUrl = product.ImageUrl;
                             item.Price = product.Price;
@@ -100,6 +98,42 @@ namespace Catalog.API.Controllers
             }
 
 
+        }
+        [HttpGet("getById")]
+        [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+        public IActionResult GetById(string id)
+        {
+            try
+            {
+                var item = _productManager.GetById(id);
+                if (item is not null)
+                    return CustomResult("Data Found", item, HttpStatusCode.OK);
+                return BadRequest("No Item");
+            }
+            catch (Exception ex)
+            {
+
+                return CustomResult(ex.Message, HttpStatusCode.BadRequest);
+            }
+        }
+
+        [HttpGet("getByProductCategory")]
+        [ProducesResponseType(typeof(IEnumerable<Product>), (int)HttpStatusCode.OK)]
+        [ResponseCache(Duration = 300)]
+        public IActionResult GetByProductCategory(string productCategory)
+        {
+            try
+            {
+                var items = _productManager.GetProductByCategory(productCategory);
+                if (items is not null && items.Any())
+                    return CustomResult("Data Found", items, HttpStatusCode.OK);
+                return BadRequest("No Item");
+            }
+            catch (Exception ex)
+            {
+
+                return CustomResult(ex.Message, HttpStatusCode.BadRequest);
+            }
         }
     }
 }
