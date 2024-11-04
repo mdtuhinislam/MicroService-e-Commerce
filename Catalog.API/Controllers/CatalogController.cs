@@ -55,7 +55,7 @@ namespace Catalog.API.Controllers
                         {
                             item.Name = product.Name;
                             item.Description = product.Description;
-                            item.ProductCategoryId = product.ProductCategoryId;
+                            item.ProductCategory = product.ProductCategory;
                             item.Summary = product.Summary;
                             item.ImageUrl = product.ImageUrl;
                             item.Price = product.Price;

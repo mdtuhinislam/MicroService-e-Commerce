@@ -23,7 +23,7 @@ namespace Catalog.API.Context
                 Id = Guid.NewGuid().ToString(),
                 Name = "iPhone 6",
                 Description = "iPhone Inc",
-                Category = "Smart Phone",
+                ProductCategory = "Smart Phone",
                 Price = 48000,
                 Summary = "NA",
                 ImageUrl = "NA"
