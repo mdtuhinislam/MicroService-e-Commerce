@@ -34,6 +34,7 @@ namespace Catalog.API.Controllers
                 return CustomResult(ex.Message, HttpStatusCode.BadRequest);
             }
         }
+
         [HttpPost("createOrUpdate")]
         public IActionResult CreateOrUpdate(Product product)
         {
@@ -76,6 +77,7 @@ namespace Catalog.API.Controllers
             }
             
         }
+
         [HttpDelete]
         public IActionResult Delete(string id)
         {
@@ -99,6 +101,7 @@ namespace Catalog.API.Controllers
 
 
         }
+
         [HttpGet("getById")]
         [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
         public IActionResult GetById(string id)

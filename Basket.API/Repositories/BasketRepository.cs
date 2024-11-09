@@ -18,13 +18,13 @@ namespace Basket.API.Repositories
             string basket = await _redisCache.GetStringAsync(userName);
 
             if (string.IsNullOrEmpty(basket))
-                throw null;
+                return null;
             return JsonConvert.DeserializeObject<ShopingCart>(basket);
         }
 
         public async Task<ShopingCart> UpdateBasket(ShopingCart basket)
         {
-           await _redisCache.SetStringAsync(basket.UserName, JsonConvert.SerializeObject (basket.Items));
+           await _redisCache.SetStringAsync(basket.UserName, JsonConvert.SerializeObject (basket));
             return await GetBasket(basket.UserName);
         }
         public async Task DeleteBusket(string userName)
