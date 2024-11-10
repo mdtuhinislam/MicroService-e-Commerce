@@ -16,7 +16,7 @@ namespace Discount.API.Controllers
             _couponRepository = couponRepository;
         }
 
-        [HttpGet]
+        [HttpGet("getById")]
         [ProducesResponseType(typeof(Coupon), (int)HttpStatusCode.OK)]
         [ResponseCache(Duration = 300)]
         public async Task<IActionResult> GetDiscount(string id) 
@@ -40,11 +40,11 @@ namespace Discount.API.Controllers
         [HttpGet("getAll")]
         [ProducesResponseType(typeof(IEnumerable<Coupon>), (int)HttpStatusCode.OK)]
         [ResponseCache(Duration = 30)]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
             try
             {
-                var items = _couponRepository.GetAllDiscountAsync();
+                var items = await _couponRepository.GetAllDiscountAsync();
 
                 if (items is not null)
                     return Ok(items);
@@ -77,7 +77,7 @@ namespace Discount.API.Controllers
 
         }
 
-        [HttpPost("update")]
+        [HttpPut]
         public async Task<IActionResult> Update([FromBody] Coupon coupon)
         {
             try
