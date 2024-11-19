@@ -1,95 +1,99 @@
-﻿using System.Net;
-using Basket.API.gRPCServices;
+﻿using AutoMapper;
+using Basket.API.GrpcServices;
 using Basket.API.Models;
 using Basket.API.Repositories;
 using CoreApiResponse;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace Basket.API.Controllers
 {
-    [Route("api/[controller]/[Action]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class BasketController : BaseController
     {
-        private readonly IBasketRepository _basketRepository;
-        private readonly DiscountgRPCService _discountgRPCService;
+        IBasketRepository _basketRepository;
+        DiscountGrpcService _discountGrpcService;
         
-        public BasketController(IBasketRepository basketRepository,
-            DiscountgRPCService discountgRPCService)
+        IMapper _mapper;
+        public BasketController(IBasketRepository basketRepository, DiscountGrpcService discountGrpcService, IMapper mapper)
         {
             _basketRepository = basketRepository;
-            _discountgRPCService = discountgRPCService;
+            _discountGrpcService = discountGrpcService;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ShopingCart), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ShoppingCart), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetBasket(string userName)
         {
             try
             {
                 var basket = await _basketRepository.GetBasket(userName);
-
-                if (basket is null)
-                    return CustomResult(new ShopingCart(), HttpStatusCode.NotFound);
-
-                return CustomResult(basket, HttpStatusCode.OK);
+                return CustomResult("Basket data load successfully.", basket ?? new ShoppingCart(userName));
             }
             catch (Exception ex)
             {
-
                 return CustomResult(ex.Message, HttpStatusCode.BadRequest);
             }
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ShopingCart), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> UpdateBasket([FromBody] ShopingCart shopingCart)
+        [ProducesResponseType(typeof(ShoppingCart), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> UpdateBasket([FromBody] ShoppingCart basket)
         {
             try
-            {
-                if (shopingCart is null || !ModelState.IsValid)
-                    return CustomResult(HttpStatusCode.BadRequest);
-
-                foreach (var item in shopingCart.Items)
+            {   //TODO: Communicate discount.grpc
+                //calculate latest price
+                //Create discount grpc service
+                foreach (var item in basket.Items)
                 {
-                    var coupon = await _discountgRPCService.GetDiscount(item.ProductId);
+                    var coupon = await _discountGrpcService.GetDiscount(item.ProductId);
                     item.Price -= coupon.Amount;
                 }
-
-                
-
-                var updatedBasket = await _basketRepository.UpdateBasket(shopingCart);
-                if(updatedBasket is null)
-                    return CustomResult("Something Went Wrong, Update unsuccessful!", HttpStatusCode.BadRequest);
-
-                return CustomResult(updatedBasket, HttpStatusCode.OK);           
+                return CustomResult("Basket modified done.", await _basketRepository.UpdateBasket(basket));
             }
             catch (Exception ex)
             {
-
                 return CustomResult(ex.Message, HttpStatusCode.BadRequest);
             }
         }
 
         [HttpDelete]
-        [ProducesResponseType(typeof(ShopingCart), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> Delete([FromBody] string userName)
+        [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> DeleteBasket(string userName)
         {
             try
             {
-                if (string.IsNullOrEmpty(userName))
-                    return CustomResult(HttpStatusCode.BadRequest);
-
-                await _basketRepository.DeleteBusket(userName);
-
-                return CustomResult("Basket deleted!", HttpStatusCode.OK);
+                await _basketRepository.DeleteBasket(userName);
+                return CustomResult("Basket has been deleted.");
             }
             catch (Exception ex)
             {
-
                 return CustomResult(ex.Message, HttpStatusCode.BadRequest);
             }
         }
+
+        //[HttpPost]
+        //[ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
+
+        //public async Task<IActionResult> Checkout([FromBody] BasketCheckout checkout)
+        //{
+        //    var basket = await _basketRepository.GetBasket(checkout.UserName);
+        //    if (basket == null)
+        //    {
+        //        return CustomResult("Basket is empty.", HttpStatusCode.BadRequest);
+        //    }
+
+        //    //Send checkout event to RabbitMQ
+        //    var eventMessage = _mapper.Map<BasketCheckoutEvent>(checkout);
+        //    eventMessage.TotalPrice = basket.TotalPrice;
+        //    await _publishEndpoint.Publish(eventMessage);
+
+        //    //Remove basket
+        //    await _basketRepository.DeleteBasket(basket.UserName);
+        //    return CustomResult("Order has been placed.");
+        //}
+
     }
 }

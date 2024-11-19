@@ -1,20 +1,29 @@
-using System.Runtime;
-using Basket.API.gRPCServices;
+using Basket.API.GrpcServices;
 using Basket.API.Repositories;
-using Discount.Grpc.Protos;
+using Discount_gRPC.Protos;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("BasketDB");
+});
 
+builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(
+    options => options.Address = new Uri(builder.Configuration.GetValue<string>("GrpcSettings:DiscountGrpcUrl")));
+builder.Services.AddScoped<DiscountGrpcService>();
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
-builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(opt =>
-opt.Address= new Uri(builder.Configuration.GetValue<string>("gRPCSettings.DiscountgRPCUrl")));
-builder.Services.AddScoped<DiscountgRPCService>();
 
+builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+//RabbitMQ Configuration
+
+
+
+// Add services to the container.
 builder.Services.AddControllers();
-
-builder.Services.AddStackExchangeRedisCache(opt => opt.Configuration = builder.Configuration.GetConnectionString("BasketDb"));
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -26,6 +35,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthorization();
 

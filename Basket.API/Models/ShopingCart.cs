@@ -1,13 +1,13 @@
 ﻿namespace Basket.API.Models
 {
-    public class ShopingCart
+    public class ShoppingCart
     {
-        public ShopingCart(string userName)
+        public ShoppingCart(string userName)
         {
             UserName = userName;
         }
 
-        public ShopingCart()
+        public ShoppingCart()
         {
             
         }
