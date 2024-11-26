@@ -24,10 +24,13 @@ namespace Ordering.Application.Features.Orders.Commands.CreateOrder
         public async Task<bool> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
             var order = _mapper.Map<Order>(request);
+            order.CreatedDate = DateTime.Now;
+            order.CreatedBy = "1";
+
             var isSuccess = await _orderRepository.AddAsync(order);
             if (isSuccess)
             {
-                await _emailService.SendEmailAsync(new Email
+                await _emailService.SendEmailAsync(new EmailMassage
                 {
                     To = request.EmailAddress,
                     Subject = $"Order {order.Id} has been successfully placed.",

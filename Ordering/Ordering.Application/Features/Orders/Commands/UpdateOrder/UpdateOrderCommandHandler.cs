@@ -19,6 +19,8 @@ namespace Ordering.Application.Features.Orders.Commands.UpdateOrder
 
         async Task<bool> IRequestHandler<UpdateOrderCommand, bool>.Handle(UpdateOrderCommand request, CancellationToken cancellationToken)
         {
+            request.UpdatedBy = "";
+            request.UpdatedAt = DateTime.Now;
             var isSuccess = await _orderRepository.UpdateAsync(request);
             if (isSuccess)
                 return isSuccess;
