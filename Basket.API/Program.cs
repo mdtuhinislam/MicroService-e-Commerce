@@ -1,6 +1,7 @@
 using Basket.API.GrpcServices;
 using Basket.API.Repositories;
 using Discount_gRPC.Protos;
+using MassTransit;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,7 +19,13 @@ builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 //RabbitMQ Configuration
-
+builder.Services.AddMassTransit(config =>
+{
+    config.UsingRabbitMq((ctx, cfg) =>
+    {
+        cfg.Host(builder.Configuration["EventBusSettings:RabbitMQHost"]);
+    });
+});
 
 
 // Add services to the container.

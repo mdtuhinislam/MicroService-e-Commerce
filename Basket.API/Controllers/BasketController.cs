@@ -3,6 +3,8 @@ using Basket.API.GrpcServices;
 using Basket.API.Models;
 using Basket.API.Repositories;
 using CoreApiResponse;
+using MassTransit;
+using MassTransit.Testing;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -12,15 +14,17 @@ namespace Basket.API.Controllers
     [ApiController]
     public class BasketController : BaseController
     {
-        IBasketRepository _basketRepository;
-        DiscountGrpcService _discountGrpcService;
-        
+        private readonly IBasketRepository _basketRepository;
+        private readonly DiscountGrpcService _discountGrpcService;
+        private readonly IPublishEndpoint _publishEndpoint;
+
         IMapper _mapper;
-        public BasketController(IBasketRepository basketRepository, DiscountGrpcService discountGrpcService, IMapper mapper)
+        public BasketController(IBasketRepository basketRepository, DiscountGrpcService discountGrpcService, IMapper mapper, IPublishEndpoint publishEndpoint)
         {
             _basketRepository = basketRepository;
             _discountGrpcService = discountGrpcService;
             _mapper = mapper;
+            _publishEndpoint = publishEndpoint;
         }
 
         [HttpGet]
@@ -74,26 +78,26 @@ namespace Basket.API.Controllers
             }
         }
 
-        //[HttpPost]
-        //[ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
+        [HttpPost]
+        [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
 
-        //public async Task<IActionResult> Checkout([FromBody] BasketCheckout checkout)
-        //{
-        //    var basket = await _basketRepository.GetBasket(checkout.UserName);
-        //    if (basket == null)
-        //    {
-        //        return CustomResult("Basket is empty.", HttpStatusCode.BadRequest);
-        //    }
+        public async Task<IActionResult> Checkout([FromBody] BasketCheckout checkout)
+        {
+            var basket = await _basketRepository.GetBasket(checkout.UserName);
+            if (basket == null)
+            {
+                return CustomResult("Basket is empty.", HttpStatusCode.BadRequest);
+            }
 
-        //    //Send checkout event to RabbitMQ
-        //    var eventMessage = _mapper.Map<BasketCheckoutEvent>(checkout);
-        //    eventMessage.TotalPrice = basket.TotalPrice;
-        //    await _publishEndpoint.Publish(eventMessage);
+            //Send checkout event to RabbitMQ
+            var eventMessage = _mapper.Map<BasketCheckoutEvent>(checkout);
+            eventMessage.TotalPrice = basket.TotalPrice;
+            await _publishEndpoint.Publish(eventMessage);
 
-        //    //Remove basket
-        //    await _basketRepository.DeleteBasket(basket.UserName);
-        //    return CustomResult("Order has been placed.");
-        //}
+            //Remove basket
+            await _basketRepository.DeleteBasket(basket.UserName);
+            return CustomResult("Order has been placed.");
+        }
 
     }
 }
