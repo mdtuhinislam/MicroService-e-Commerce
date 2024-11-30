@@ -90,7 +90,26 @@ namespace Basket.API.Controllers
             }
 
             //Send checkout event to RabbitMQ
-            var eventMessage = _mapper.Map<BasketCheckoutEvent>(checkout);
+            //var eventMessage = _mapper.Map<BasketCheckoutEvent>(checkout);
+            var eventMessage = new BasketCheckoutEvent
+            {
+                UserName = checkout.UserName,
+                FirstName = checkout.FirstName,
+                LastName = checkout.LastName,
+                Address = checkout.Address,
+                CardName = checkout.CardName,
+                CardNumber = checkout.CardNumber,
+                City = checkout.City,
+                CVV = checkout.CVV,
+                EmailAddress = checkout.EmailAddress,
+                Expiraton = checkout.Expiraton,
+                PaymentMethod = checkout.PaymentMethod,
+                PhoneNumber = checkout.PhoneNumber,
+                State = checkout.State,
+                TotalPrice = checkout.TotalPrice,
+                ZipCode = checkout.ZipCode
+                
+            };
             eventMessage.TotalPrice = basket.TotalPrice;
             await _publishEndpoint.Publish(eventMessage);
 
