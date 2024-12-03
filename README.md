@@ -31,3 +31,12 @@ Run the SQL scripts provided in the /Database directory.
 Configure services:
 
 3. Update appsettings.json in each microservice with the correct database connection strings.
+
+📧 Contact
+If you have any questions, feel free to reach out:
+
+GitHub: mdtuhinislam
+Email: mdtuhinislam@gmail.com
+⭐ Acknowledgments
+Thanks to the open-source community for tools and frameworks used in this project.
+Inspiration from microservices architecture principles and patterns.
